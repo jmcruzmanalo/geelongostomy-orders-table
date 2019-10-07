@@ -13,6 +13,7 @@ const OrderItem = props => {
           type="number"
           value={product.quantity}
           onInput={e => onQuantityChange(e.target.value)}
+          min="1"
         />
       </td>
       <td data-label="Total" className="totalitem">
