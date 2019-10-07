@@ -14,6 +14,13 @@ const products = window.products || [
   }
 ];
 
+const POSTAGE_ORDER = {
+  productName: `POSTAGE per month's order`,
+  price: 14,
+  quantity: 0,
+  total: 0
+};
+
 export default class App extends Component {
   state = {
     orders: [],
@@ -22,6 +29,7 @@ export default class App extends Component {
   };
 
   componentDidUpdate() {
+    console.log(this.state.orders);
     const newCost =
       this.state.orders.length > 0
         ? this.state.orders.map(o => o.total).reduce((a, c) => a + c)
@@ -49,10 +57,21 @@ export default class App extends Component {
       quantity: 1,
       total: product.price
     };
-    this.setState({
-      orders: [...this.state.orders, newOrder],
-      modalIsOpen: false
-    });
+    if (this.state.orders.length === 0) {
+      this.setState({
+        orders: [...this.state.orders, newOrder, { ...POSTAGE_ORDER }],
+        modalIsOpen: false
+      });
+    } else {
+      const updatedOrders = [...this.state.orders, newOrder];
+      const idx = updatedOrders.findIndex(o => o.productName === POSTAGE_ORDER.productName);
+      const postageOrder = updatedOrders.splice(idx, 1);
+      updatedOrders.push(postageOrder[0]);
+      this.setState({
+        orders: updatedOrders,
+        modalIsOpen: false
+      });
+    }
   }
 
   removeOrder(product) {
@@ -62,13 +81,15 @@ export default class App extends Component {
     if (targetIndex === -1) return;
     const updatedOrders = [...this.state.orders];
     updatedOrders.splice(targetIndex, 1);
+    if (updatedOrders.length === 1 && updatedOrders[0].productName === POSTAGE_ORDER.productName) {
+      updatedOrders.splice(0, 1);
+    }
     this.setState({
       orders: updatedOrders
     });
   }
 
   onOrderQuantityChange(productName, quantity) {
-    if (quantity <= 0) return;
     const updatedOrders = [...this.state.orders];
     const targetIndex = updatedOrders.findIndex(
       o => o.productName === productName
@@ -89,7 +110,7 @@ export default class App extends Component {
           <thead>
             <tr>
               <th>Items</th>
-              <th>Price per item</th>
+              <th>Item Price</th>
               <th>Quantity</th>
               <th>Total</th>
               <th></th>
@@ -97,15 +118,28 @@ export default class App extends Component {
           </thead>
           <tbody>
             {this.state.orders.map(product => {
-              return (
-                <OrderItem
-                  product={product}
-                  onQuantityChange={quantity => {
-                    this.onOrderQuantityChange(product.productName, quantity);
-                  }}
-                  onRemove={product => this.removeOrder(product)}
-                />
-              );
+              if (POSTAGE_ORDER.productName === product.productName) {
+                return (
+                  <OrderItem
+                    product={product}
+                    onQuantityChange={quantity => {
+                      this.onOrderQuantityChange(product.productName, quantity);
+                    }}
+                    min="0"
+                  />
+                );
+              } else {
+                return (
+                  <OrderItem
+                    product={product}
+                    onQuantityChange={quantity => {
+                      this.onOrderQuantityChange(product.productName, quantity);
+                    }}
+                    onRemove={product => this.removeOrder(product)}
+                    min="1"
+                  />
+                );
+              }
             })}
           </tbody>
           <tfoot>

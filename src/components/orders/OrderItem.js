@@ -1,5 +1,5 @@
 const OrderItem = props => {
-  const { product, onQuantityChange, onRemove } = props;
+  const { product, onQuantityChange, onRemove, min } = props;
   return (
     <tr className="item-row">
       <td>
@@ -13,16 +13,18 @@ const OrderItem = props => {
           type="number"
           value={product.quantity}
           onInput={e => onQuantityChange(e.target.value)}
-          min="1"
+          min={min}
         />
       </td>
       <td data-label="Total" className="totalitem">
         <input type="number" value={product.total.toFixed(2)} readOnly />
       </td>
       <td>
-        <button className="remove-order" onClick={() => onRemove(product)}>
-          ×
-        </button>
+        {onRemove && (
+          <button className="remove-order" onClick={() => onRemove(product)}>
+            ×
+          </button>
+        )}
       </td>
     </tr>
   );
