@@ -3,13 +3,14 @@ import './style.css';
 import Modal from 'react-modal';
 import OrderItem from './OrderItem';
 
+// Set global variable
 const products = [
   {
-    name: 'Product 1',
+    productName: 'Product 1',
     price: 8
   },
   {
-    name: 'Another product',
+    productName: 'Another product',
     price: 10
   }
 ];
@@ -17,14 +18,31 @@ const products = [
 export default class App extends Component {
   state = {
     orders: [],
+    totalCost: 0,
     modalIsOpen: false
   };
 
-  componentDidUpdate() {}
+  componentDidUpdate() {
+    const newCost =
+      this.state.orders.length > 0
+        ? this.state.orders.map(o => o.total).reduce((a, c) => a + c)
+        : 0;
+    if (this.state.totalCost !== newCost) {
+      this.setState({
+        totalCost: newCost
+      });
+    }
+    const input = document.getElementById('orders-table-value');
+    if (!input) console.error('Cannot find input with id #orders-table-value');
+    input.value = JSON.stringify({
+      orders: this.state.orders,
+      totalCost: this.state.totalCost
+    });
+  }
 
   addOrder(product) {
     const doesExist = this.state.orders.find(order => {
-      return order.name === product.name;
+      return order.productName === product.productName;
     });
     if (doesExist) return;
     const newOrder = {
@@ -40,7 +58,7 @@ export default class App extends Component {
 
   removeOrder(product) {
     const targetIndex = this.state.orders.findIndex(
-      order => order.name === product.name
+      order => order.productName === product.productName
     );
     if (targetIndex === -1) return;
     const updatedOrders = [...this.state.orders];
@@ -53,7 +71,9 @@ export default class App extends Component {
   onOrderQuantityChange(productName, quantity) {
     if (quantity <= 0) return;
     const updatedOrders = [...this.state.orders];
-    const targetIndex = updatedOrders.findIndex(o => o.name === productName);
+    const targetIndex = updatedOrders.findIndex(
+      o => o.productName === productName
+    );
     const o = updatedOrders[targetIndex]; // target order prev
     updatedOrders[targetIndex] = {
       ...o,
@@ -82,7 +102,7 @@ export default class App extends Component {
                 <OrderItem
                   product={product}
                   onQuantityChange={quantity => {
-                    this.onOrderQuantityChange(product.name, quantity);
+                    this.onOrderQuantityChange(product.productName, quantity);
                   }}
                   onRemove={product => this.removeOrder(product)}
                 />
@@ -94,11 +114,7 @@ export default class App extends Component {
               <td colSpan={3} style={{ textAlign: 'right' }}>
                 TOTAL COST
               </td>
-              <td>
-                {this.state.orders.length > 0
-                  ? this.state.orders.map(o => o.total).reduce((a, c) => a + c)
-                  : 0}
-              </td>
+              <td>{this.state.totalCost}</td>
             </tr>
           </tfoot>
         </table>
@@ -117,18 +133,25 @@ export default class App extends Component {
           onRequestClose={() => this.setState({ modalIsOpen: false })}
         >
           <ul>
-            {products.map(product => {
-              return (
-                <li
-                  onClick={() => {
-                    this.addOrder(product);
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {product.name} - {product.price}
-                </li>
-              );
-            })}
+            {products
+              .filter(product => {
+                const inState = this.state.orders.find(order => {
+                  return product.productName === order.productName;
+                });
+                return !inState;
+              })
+              .map(product => {
+                return (
+                  <li
+                    onClick={() => {
+                      this.addOrder(product);
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {product.productName} - {product.price}
+                  </li>
+                );
+              })}
           </ul>
         </Modal>
       </Fragment>

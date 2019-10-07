@@ -3,7 +3,7 @@ const OrderItem = props => {
   return (
     <tr className="item-row">
       <td>
-        <input value={product.name} readOnly />
+        <input value={product.productName} readOnly />
       </td>
       <td>
         <input type="number" value={product.price} readOnly />
