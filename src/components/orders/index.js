@@ -1,10 +1,9 @@
 import { h, Component, Fragment } from 'preact';
-import './style.css';
 import Modal from 'react-modal';
 import OrderItem from './OrderItem';
 
 // Set global variable
-const products = [
+const products = window.products || [
   {
     productName: 'Product 1',
     price: 8
@@ -85,7 +84,7 @@ export default class App extends Component {
 
   render(props) {
     return (
-      <Fragment>
+      <div>
         <table id="product-listing">
           <thead>
             <tr>
@@ -114,23 +113,26 @@ export default class App extends Component {
               <td colSpan={3} style={{ textAlign: 'right' }}>
                 TOTAL COST
               </td>
-              <td>{this.state.totalCost}</td>
+              <td>{this.state.totalCost.toFixed(2)}</td>
             </tr>
           </tfoot>
         </table>
         <button
           type="button"
+          className="addOrder"
           onClick={() =>
             this.setState({ modalIsOpen: !this.state.modalIsOpen })
           }
         >
-          Add order
+          + Add order
         </button>
         <Modal
           isOpen={this.state.modalIsOpen}
           shouldCloseOnOverlayClick={true}
           ariaHideApp={false}
           onRequestClose={() => this.setState({ modalIsOpen: false })}
+          className="upliftModal"
+          overlayClassName="upliftModalOverlay"
         >
           <ul>
             {products
@@ -148,13 +150,16 @@ export default class App extends Component {
                     }}
                     style={{ cursor: 'pointer' }}
                   >
-                    {product.productName} - {product.price}
+                    <span className="product-name">{product.productName}</span>{' '}
+                    <span className="product-price">
+                      {product.price.toFixed(2)}
+                    </span>
                   </li>
                 );
               })}
           </ul>
         </Modal>
-      </Fragment>
+      </div>
     );
   }
 }
